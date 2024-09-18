@@ -1,0 +1,8 @@
+*.egg-info/
+__pycache__/
+.idea/
+venv/
+
+utils/credential.json
+!datasets/README.md
+datasets/
