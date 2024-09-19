@@ -32,23 +32,25 @@ def create_index(embeddings, batch_size=32):
     embedding_dim = embeddings.shape[1]
 
     index = faiss.IndexFlatIP(embedding_dim)
-    gpu_index = faiss.index_cpu_to_gpu(
-        faiss.StandardGpuResources(),
-        0,
-        index,
-    )
+
+    if torch.cuda.is_available():
+        index = faiss.index_cpu_to_gpu(
+            faiss.StandardGpuResources(),
+            0,
+            index,
+        )
 
     for start_index in trange(0, embeddings.shape[0], batch_size, desc="indexing"):
-        gpu_index.add(embeddings[start_index: start_index + batch_size])
+        index.add(embeddings[start_index: start_index + batch_size])
 
-    return gpu_index
+    return index
 
 
-def search_index(queries, records, gpu_index, top_k=10):
+def search_index(queries, records, index, top_k=10):
     query_embedding = MODEL.encode(" ".join(queries), device=DEVICE)
     query_embedding = np.array([query_embedding])
     faiss.normalize_L2(query_embedding)
 
-    distances, indices = gpu_index.search(query_embedding, top_k)
+    distances, indices = index.search(query_embedding, top_k)
     return pd.DataFrame([records[idx] for idx in indices[0]])
 

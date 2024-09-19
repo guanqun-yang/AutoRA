@@ -5,7 +5,7 @@ import pandas as pd
 from search.sentence_transformers import (
     embed_documents,
     create_index,
-    search,
+    search_index,
 )
 from utils.common import (
     add_google_sheet,
@@ -50,10 +50,10 @@ faiss.write_index(cpu_index, 'faiss_index.bin')
 #     cpu_index
 # )
 
-searched_df = search(queries, records, gpu_index, top_k=200)
-add_google_sheet(
-    searched_df.astype(str),
-    "Search",
-    get_current_datetime(),
-)
+# searched_df = search_index(queries, records, gpu_index, top_k=200)
+# add_google_sheet(
+#     searched_df.astype(str),
+#     "Search",
+#     get_current_datetime(),
+# )
 

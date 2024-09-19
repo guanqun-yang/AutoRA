@@ -4,6 +4,8 @@ __pycache__/
 venv/
 
 utils/credential.json
+
+# keep the folder
 !datasets/README.md
 datasets/*
 

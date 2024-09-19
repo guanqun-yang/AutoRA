@@ -28,17 +28,50 @@ from setting import setting
 app = Flask(__name__)
 
 def search_papers(query):
-    df = pd.read_pickle(setting.DATASET_PATH / "acl.pkl")
-    df = df[df.year.isin(["2023", "2024"])]
+    EMBEDDING_FILE = setting.DATASET_PATH / "se_embedding.pkl"
+    INDEX_FILE = setting.DATASET_PATH / "se_index.pkl"
+
+    ##################################################
+    # search NLP conferences
+    ##################################################
+
+    # df = pd.read_pickle(setting.DATASET_PATH / "acl.pkl")
+    # df = df[df.year.isin(["2023", "2024"])]
+
+    # records = df.to_dict(orient="records")
+    #
+    # embeddings = load_pickle_file(setting.DATASET_PATH / "acl_embedding.pkl")
+    # index = create_index(embeddings, batch_size=32)
+    #
+    # cprint(f"SEARCH QUERY: {query}")
+    # queries = [entry.strip() for entry in query.split(",")]
+    #
+    # searched_df = search_index(queries, records, index, top_k=200)
+    # searched_papers = searched_df[["title", "url", "author", "abstract"]].fillna("NONE").to_dict(orient="records")
+
+    ##################################################
+    # search SE papers
+    ##################################################
+    df = pd.read_pickle(setting.DATASET_PATH / "se.pkl")
+    df = df[df.update_date >= "2022-01-01"]
+
     records = df.to_dict(orient="records")
 
-    embeddings = load_pickle_file(setting.DATASET_PATH / "acl_embedding.pkl")
-    gpu_index = create_index(embeddings, batch_size=32)
+    if INDEX_FILE.exists():
+        index = faiss.read_index(INDEX_FILE)
+    else:
+        if EMBEDDING_FILE.exists():
+            embeddings = load_pickle_file(setting.DATASET_PATH / "se_embedding.pkl")
+        else:
+            embeddings = embed_documents(records, batch_size=32)
+
+        index = create_index(embeddings, batch_size=32)
+        faiss.write_index(index, INDEX_FILE)
 
     cprint(f"SEARCH QUERY: {query}")
     queries = [entry.strip() for entry in query.split(",")]
 
-    searched_df = search_index(queries, records, gpu_index, top_k=200)
+    searched_df = search_index(queries, records, index, top_k=200)
     searched_papers = searched_df[["title", "url", "author", "abstract"]].fillna("NONE").to_dict(orient="records")
 
     return searched_papers
