@@ -5,4 +5,7 @@ venv/
 
 utils/credential.json
 !datasets/README.md
-datasets/
+datasets/*
+
+tests/acl_embedding.pkl
+tests/faiss_index.bin

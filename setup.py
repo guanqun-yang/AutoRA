@@ -34,6 +34,9 @@ setup(
         "lxml",
         "wget",
         "bibtexparser",
+        "sentence-transformers",
+        "faiss-gpu",
+        "flask",
     ],
     cmdclass={
         "install": CustomInstallCommand

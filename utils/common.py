@@ -1,6 +1,7 @@
 import time
 import string
 import random
+import pickle
 import gspread
 import pathlib
 
@@ -49,6 +50,16 @@ def launch_google_sheet_client():
     client = gspread.authorize(creds)
 
     return client
+
+
+def save_pickle_file(data, file_name):
+    with open(file_name, "wb") as fp:
+        pickle.dump(data, fp)
+
+
+def load_pickle_file(file_name):
+    with open(file_name, "rb") as fp:
+        return pickle.load(fp)
 
 
 def add_google_sheet(df, filename, sheetname):
