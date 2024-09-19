@@ -16,3 +16,23 @@
 
 
 ![](resources/004-demo.png)
+
+## Data Sources
+
+| Conference              | Source        | Note |
+| ----------------------- | ------------- | ---- |
+| NLP Conferences | ACL Anthology |      |
+| All Other Conferences and Preprints | The arXiv Metadata Hosted on [Kaggle](https://www.kaggle.com/datasets/Cornell-University/arxiv?resource=download) |      |
+
+In the future, we may be able to obtain the full bibliography for each of the conferences listed below:
+
+| Conference              | Source        | Note |
+| ----------------------- | ------------- | ---- |
+| ICSE | IEEE |  |
+| ESEC                    | ACM           |      |
+| FSE                     | ACM           |      |
+| ISSTA                   | ACM           |      |
+| MSR                     | IEEE and ACM  |      |
+| ASE | IEEE and ACM | |
+| ISSRE | IEEE | |
+| ICSME | IEEE | |
