@@ -1,4 +1,6 @@
 import faiss
+import multiprocessing
+
 import pandas as pd
 
 from search.sentence_transformers import (
@@ -28,9 +30,6 @@ from setting import setting
 app = Flask(__name__)
 
 def search_papers(query):
-    EMBEDDING_FILE = setting.DATASET_PATH / "se_embedding.pkl"
-    INDEX_FILE = setting.DATASET_PATH / "se_index.pkl"
-
     ##################################################
     # search NLP conferences
     ##################################################
@@ -52,21 +51,25 @@ def search_papers(query):
     ##################################################
     # search SE papers
     ##################################################
+    EMBEDDING_FILE = setting.DATASET_PATH / "se_embedding.pkl"
+    INDEX_FILE = setting.DATASET_PATH / "se_index.bin"
+
     df = pd.read_pickle(setting.DATASET_PATH / "se.pkl")
     df = df[df.update_date >= "2022-01-01"]
 
     records = df.to_dict(orient="records")
 
     if INDEX_FILE.exists():
-        index = faiss.read_index(INDEX_FILE)
+        index = faiss.read_index(str(INDEX_FILE))
     else:
         if EMBEDDING_FILE.exists():
             embeddings = load_pickle_file(setting.DATASET_PATH / "se_embedding.pkl")
         else:
-            embeddings = embed_documents(records, batch_size=32)
+            embeddings = embed_documents(records, batch_size=4)
+            save_pickle_file(embeddings, EMBEDDING_FILE)
 
-        index = create_index(embeddings, batch_size=32)
-        faiss.write_index(index, INDEX_FILE)
+        index = create_index(embeddings, batch_size=4)
+        faiss.write_index(index, str(INDEX_FILE))
 
     cprint(f"SEARCH QUERY: {query}")
     queries = [entry.strip() for entry in query.split(",")]
