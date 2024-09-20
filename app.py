@@ -79,8 +79,9 @@ def search_papers(query):
 
     searched_df = search_index(queries, records, index, top_k=200)
     searched_df["url"] = searched_df.apply(lambda x: "https://www.arxiv.org/abs/{}".format(x["id"]), axis="columns")
+    searched_df = searched_df.rename({"authors": "author"}, axis="columns")
 
-    searched_papers = searched_df[["title", "url", "authors", "abstract"]].fillna("NONE").to_dict(orient="records")
+    searched_papers = searched_df[["title", "url", "author", "abstract"]].fillna("NONE").to_dict(orient="records")
 
     return searched_papers
 
