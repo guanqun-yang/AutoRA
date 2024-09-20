@@ -8,6 +8,12 @@
 <!--    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
 <!--    &lt;!&ndash; jQuery &ndash;&gt;-->
 <!--    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+<!--    <style>-->
+<!--        /* CSS class to apply red background */-->
+<!--        .flagged {-->
+<!--            background-color: #f8d7da;-->
+<!--        }-->
+<!--    </style>-->
 <!--</head>-->
 <!--<body>-->
 <!--<div class="container mt-5">-->
@@ -30,7 +36,7 @@
 <!--            $('#results').empty();-->
 <!--            data.forEach(function(paper, index) {-->
 <!--                var paperHtml = `-->
-<!--                    <div class="card mb-3">-->
+<!--                    <div class="card mb-3" id="paper-${index}">-->
 <!--                        <div class="card-header">-->
 <!--                            <strong><a href="${paper.url}" target="_blank">${paper.title}</a></strong>-->
 <!--                            <p>${paper.author}</p>-->
@@ -42,10 +48,19 @@
 <!--                            <div id="abstract-${index}" class="collapse">-->
 <!--                                <p>${paper.abstract}</p>-->
 <!--                            </div>-->
+<!--                            <button class="btn btn-danger mt-2 flag-btn" data-index="${index}">Flag</button>-->
 <!--                        </div>-->
 <!--                    </div>-->
 <!--                `;-->
 <!--                $('#results').append(paperHtml);-->
+<!--            });-->
+
+<!--            // Attach click event for 'Flag' buttons-->
+<!--            $('.flag-btn').on('click', function() {-->
+<!--                var index = $(this).data('index');-->
+<!--                var paperCard = $(`#paper-${index}`);-->
+<!--                // Toggle 'flagged' class to highlight the entry-->
+<!--                paperCard.toggleClass('flagged');-->
 <!--            });-->
 <!--        });-->
 <!--    });-->
@@ -74,11 +89,34 @@
 <body>
 <div class="container mt-5">
     <h1>Paper Search</h1>
+
     <div class="form-group">
         <label for="query">Enter your query:</label>
         <input type="text" id="query" class="form-control">
     </div>
+
+    <!-- Selector for number of papers -->
+    <div class="form-group">
+        <label for="num-papers">How many papers to search:</label>
+        <select id="num-papers" class="form-control">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+        </select>
+    </div>
+
+    <!-- Selector for paper category -->
+    <div class="form-group">
+        <label for="paper-type">Select branch to execute:</label>
+        <select id="paper-type" class="form-control">
+            <option value="NLP">Search NLP Papers</option>
+            <option value="SE">Search SE Papers</option>
+        </select>
+    </div>
+
     <button id="search-btn" class="btn btn-primary">Search</button>
+
     <div id="results" class="mt-4"></div>
 </div>
 
@@ -88,7 +126,11 @@
 $(document).ready(function() {
     $('#search-btn').on('click', function() {
         var query = $('#query').val();
-        $.post('/search', { query: query }, function(data) {
+        var numPapers = $('#num-papers').val(); // Get number of papers to search
+        var paperType = $('#paper-type').val(); // Get selected branch (NLP or SE)
+
+        // Send the query, number of papers, and selected branch to the backend
+        $.post('/search', { query: query, numPapers: numPapers, paperType: paperType }, function(data) {
             $('#results').empty();
             data.forEach(function(paper, index) {
                 var paperHtml = `
@@ -124,4 +166,3 @@ $(document).ready(function() {
 </script>
 </body>
 </html>
-
