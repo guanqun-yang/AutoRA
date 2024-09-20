@@ -1,5 +1,5 @@
+import torch
 import faiss
-import multiprocessing
 
 import pandas as pd
 
@@ -65,17 +65,22 @@ def search_papers(query):
         if EMBEDDING_FILE.exists():
             embeddings = load_pickle_file(setting.DATASET_PATH / "se_embedding.pkl")
         else:
-            embeddings = embed_documents(records, batch_size=4)
+            embeddings = embed_documents(records, batch_size=32)
             save_pickle_file(embeddings, EMBEDDING_FILE)
 
-        index = create_index(embeddings, batch_size=4)
+        index = create_index(embeddings, batch_size=32)
+        if torch.cuda.is_available():
+            index = faiss.index_gpu_to_cpu(index)
+
         faiss.write_index(index, str(INDEX_FILE))
 
     cprint(f"SEARCH QUERY: {query}")
     queries = [entry.strip() for entry in query.split(",")]
 
     searched_df = search_index(queries, records, index, top_k=200)
-    searched_papers = searched_df[["title", "url", "author", "abstract"]].fillna("NONE").to_dict(orient="records")
+    searched_df["url"] = searched_df.apply(lambda x: "https://www.arxiv.org/abs/{}".format(x["id"]), axis="columns")
+
+    searched_papers = searched_df[["title", "url", "authors", "abstract"]].fillna("NONE").to_dict(orient="records")
 
     return searched_papers
 

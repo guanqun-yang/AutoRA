@@ -19,7 +19,7 @@ common_packages = [
     "bibtexparser",
     "flask",
     "sentence_transformers",
-    "faiss-cpu", # do not rely on GPU for anything
+    "faiss-gpu",
 ]
 
 setup(
