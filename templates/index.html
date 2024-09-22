@@ -69,6 +69,104 @@
 <!--</body>-->
 <!--</html>-->
 
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Paper Search</title>-->
+<!--    &lt;!&ndash; Bootstrap CSS &ndash;&gt;-->
+<!--    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
+<!--    &lt;!&ndash; jQuery &ndash;&gt;-->
+<!--    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+<!--    <style>-->
+<!--        /* CSS class to apply red background */-->
+<!--        .flagged {-->
+<!--            background-color: #f8d7da;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="container mt-5">-->
+<!--    <h1>Paper Search</h1>-->
+
+<!--    <div class="form-group">-->
+<!--        <label for="query">Enter your query:</label>-->
+<!--        <input type="text" id="query" class="form-control">-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Selector for number of papers &ndash;&gt;-->
+<!--    <div class="form-group">-->
+<!--        <label for="num-papers">How many papers to search:</label>-->
+<!--        <select id="num-papers" class="form-control">-->
+<!--            <option value="20">20</option>-->
+<!--            <option value="50">50</option>-->
+<!--            <option value="100">100</option>-->
+<!--            <option value="200">200</option>-->
+<!--        </select>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Selector for paper category &ndash;&gt;-->
+<!--    <div class="form-group">-->
+<!--        <label for="paper-type">Select branch to execute:</label>-->
+<!--        <select id="paper-type" class="form-control">-->
+<!--            <option value="NLP">Search NLP Papers</option>-->
+<!--            <option value="SE">Search SE Papers</option>-->
+<!--        </select>-->
+<!--    </div>-->
+
+<!--    <button id="search-btn" class="btn btn-primary">Search</button>-->
+
+<!--    <div id="results" class="mt-4"></div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Bootstrap JS &ndash;&gt;-->
+<!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>-->
+<!--<script>-->
+<!--$(document).ready(function() {-->
+<!--    $('#search-btn').on('click', function() {-->
+<!--        var query = $('#query').val();-->
+<!--        var numPapers = $('#num-papers').val(); // Get number of papers to search-->
+<!--        var paperType = $('#paper-type').val(); // Get selected branch (NLP or SE)-->
+
+<!--        // Send the query, number of papers, and selected branch to the backend-->
+<!--        $.post('/search', { query: query, numPapers: numPapers, paperType: paperType }, function(data) {-->
+<!--            $('#results').empty();-->
+<!--            data.forEach(function(paper, index) {-->
+<!--                var paperHtml = `-->
+<!--                    <div class="card mb-3" id="paper-${index}">-->
+<!--                        <div class="card-header">-->
+<!--                            <strong><a href="${paper.url}" target="_blank">${paper.title}</a></strong>-->
+<!--                            <p>${paper.author}</p>-->
+<!--                        </div>-->
+<!--                        <div class="card-body">-->
+<!--                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#abstract-${index}">-->
+<!--                                Show Abstract-->
+<!--                            </button>-->
+<!--                            <div id="abstract-${index}" class="collapse">-->
+<!--                                <p>${paper.abstract}</p>-->
+<!--                            </div>-->
+<!--                            <button class="btn btn-danger mt-2 flag-btn" data-index="${index}">Flag</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                `;-->
+<!--                $('#results').append(paperHtml);-->
+<!--            });-->
+
+<!--            // Attach click event for 'Flag' buttons-->
+<!--            $('.flag-btn').on('click', function() {-->
+<!--                var index = $(this).data('index');-->
+<!--                var paperCard = $(`#paper-${index}`);-->
+<!--                // Toggle 'flagged' class to highlight the entry-->
+<!--                paperCard.toggleClass('flagged');-->
+<!--            });-->
+<!--        });-->
+<!--    });-->
+<!--});-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,24 +193,61 @@
         <input type="text" id="query" class="form-control">
     </div>
 
-    <!-- Selector for number of papers -->
+    <!-- New row with all options in one line -->
     <div class="form-group">
-        <label for="num-papers">How many papers to search:</label>
-        <select id="num-papers" class="form-control">
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-        </select>
-    </div>
+        <div class="row">
+            <!-- Number of Papers to retrieve -->
+            <div class="col-md-3">
+                <label for="num-papers">How many papers to search:</label>
+                <div id="num-papers">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="num-papers" id="numPapers20" value="20">
+                        <label class="form-check-label" for="numPapers20">20</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="num-papers" id="numPapers50" value="50">
+                        <label class="form-check-label" for="numPapers50">50</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="num-papers" id="numPapers100" value="100">
+                        <label class="form-check-label" for="numPapers100">100</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="num-papers" id="numPapers200" value="200">
+                        <label class="form-check-label" for="numPapers200">200</label>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Selector for paper category -->
-    <div class="form-group">
-        <label for="paper-type">Select branch to execute:</label>
-        <select id="paper-type" class="form-control">
-            <option value="NLP">Search NLP Papers</option>
-            <option value="SE">Search SE Papers</option>
-        </select>
+            <!-- Year range selector -->
+            <div class="col-md-3">
+                <label for="year-range">Select year range:</label>
+                <div class="d-flex">
+                    <input type="number" id="start-year" class="form-control" placeholder="Start Year">
+                    <span class="mx-2">to</span>
+                    <input type="number" id="end-year" class="form-control" placeholder="End Year">
+                </div>
+            </div>
+
+            <!-- Paper sources (Multiple-choice) -->
+            <div class="col-md-6">
+                <label for="paper-sources">Select venues:</label>
+                <div id="paper-sources">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="sourceACL" value="ACL">
+                        <label class="form-check-label" for="sourceACL">ACL Anthology</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="sourceSE" value="SE">
+                        <label class="form-check-label" for="sourceSE">cs.SE</label>
+                    </div>
+<!--                    <div class="form-check form-check-inline">-->
+<!--                        <input class="form-check-input" type="checkbox" id="sourceAI" value="AI">-->
+<!--                        <label class="form-check-label" for="sourceAI">cs.LG</label>-->
+<!--                    </div>-->
+                </div>
+            </div>
+        </div>
     </div>
 
     <button id="search-btn" class="btn btn-primary">Search</button>
@@ -126,11 +261,22 @@
 $(document).ready(function() {
     $('#search-btn').on('click', function() {
         var query = $('#query').val();
-        var numPapers = $('#num-papers').val(); // Get number of papers to search
-        var paperType = $('#paper-type').val(); // Get selected branch (NLP or SE)
 
-        // Send the query, number of papers, and selected branch to the backend
-        $.post('/search', { query: query, numPapers: numPapers, paperType: paperType }, function(data) {
+        // Get selected number of papers to retrieve
+        var numPapers = $("input[name='num-papers']:checked").val();
+
+        // Get year range
+        var startYear = $('#start-year').val();
+        var endYear = $('#end-year').val();
+
+        // Get selected paper sources
+        var paperSources = [];
+        $('#paper-sources input:checked').each(function() {
+            paperSources.push($(this).val());
+        });
+
+        // Send data to the backend
+        $.post('/search', { query: query, numPapers: numPapers, startYear: startYear, endYear: endYear, paperSources: paperSources }, function(data) {
             $('#results').empty();
             data.forEach(function(paper, index) {
                 var paperHtml = `

@@ -46,3 +46,8 @@ In the future, we may be able to obtain the full bibliography for each of the co
 | ASE | IEEE and ACM | |
 | ISSRE | IEEE | |
 | ICSME | IEEE | |
+
+
+## Design
+
+- AutoRA is designed to work with tens of millions of research papers. It leverages the ChromaDB to store **both** metadata and embeddings. 

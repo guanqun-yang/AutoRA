@@ -12,15 +12,10 @@ DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 MODEL = SentenceTransformer("multi-qa-mpnet-base-dot-v1").to(DEVICE)
 
 
-def embed_documents(records, batch_size=512):
+def embed_documents(documents, batch_size=512):
     embeddings = list()
-    for start_idx in trange(0, len(records), batch_size, desc="embedding"):
-        texts = [
-            "{} {}".format(record["title"], record["abstract"])
-            for record in records
-        ]
-
-        batch_embeddings = MODEL.encode(texts[start_idx: start_idx+batch_size], device=DEVICE)
+    for start_idx in trange(0, len(documents), batch_size, desc="embedding"):
+        batch_embeddings = MODEL.encode(documents[start_idx: start_idx+batch_size], device=DEVICE)
         embeddings.append(batch_embeddings)
 
     return np.vstack(embeddings)
