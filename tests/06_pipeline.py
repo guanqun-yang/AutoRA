@@ -4,12 +4,16 @@ import faiss
 import chromadb
 
 from chromadb.utils import embedding_functions
+
 from search.sentence_transformers import (
     embed_documents,
 )
 
 import pandas as pd
 
+from utils.schema import (
+    align_dataset_schema
+)
 from utils.common import (
     get_current_datetime,
 )
@@ -37,41 +41,46 @@ collection = client.get_or_create_collection(
 # CREATE INDEX
 ##################################################
 
-dataset_name = "acl_small.json"
+# dataset_name = "acl_small.json"
 # dataset_name = "arxiv-metadata-oai-snapshot.json",
 
-n_chunk = 0
+DATASET_NAME_DICT = {
+    "arxiv": "arxiv-metadata-oai-snapshot.json",
+    "acl": "acl.json"
+}
 
-# save arxiv papers to the database
-for chunk in pd.read_json(
-    setting.DATASET_PATH / dataset_name,
-    lines=True,
-    chunksize=1000
-):
-    # special processing required by each dataset
-    if dataset_name == "acl":
-        sources = ["acl" for _ in range(len(chunk))]
-    elif dataset_name == "arxiv":
-        sources = chunk.apply(lambda x: x["categories"].split(), axis="columns").tolist()
-    else:
-        sources = ["" for _ in range(len(chunk))]
+# process all data sources at the same time
+chunksize = 10000
 
-    # documents
-    documents = chunk.apply(lambda x: "{} {}".format(x["title"], x["abstract"]), axis="columns").tolist()
+for dataset_name, filename in DATASET_NAME_DICT.items():
+    n_processed = 0
+    for chunk in pd.read_json(
+        setting.DATASET_PATH / filename,
+        lines=True,
+        chunksize=chunksize
+    ):
+        # special processing required by each dataset
+        df = align_dataset_schema(chunk, dataset_name=dataset_name)
 
-    # ids and sources
-    ids = [str(uuid.uuid4()) for _ in range(len(documents))]
+        # documents
+        documents = df.apply(lambda x: "{} {}".format(x["title"], x["abstract"]), axis="columns").tolist()
 
-    # embeddings
-    embeddings = embed_documents(documents, batch_size=16)
+        # ids and sources
+        ids = [str(uuid.uuid4()) for _ in range(len(documents))]
 
-    # the columns that are not integer, string, or float need to be removed
-    collection.add(
-        ids=ids,
-        documents=documents,
-        metadatas=chunk.assign(uuid=ids).assign(source=sources).fillna("NONE").to_dict(orient="records"),
-        embeddings=embeddings
-    )
+        # embeddings
+        embeddings = embed_documents(documents, batch_size=16)
+
+        # the columns that are not integer, string, or float need to be removed
+        collection.add(
+            ids=ids,
+            documents=documents,
+            metadatas=df.assign(uuid=ids).fillna("NONE").to_dict(orient="records"),
+            embeddings=embeddings
+        )
+
+        n_processed += chunksize
+        print(f"{dataset_name}: {n_processed}")
 
 ##################################################
 # QUERY INDEX
@@ -90,19 +99,41 @@ for chunk in pd.read_json(
 # where: A Where type dict used to filter results by. e.g. `{"$and": [{"color" : "red"}, {"price": {"$gte": 4.20}}]}`
 # where_document: A WhereDocument type dict used to filter by the documents. E.g. `{$contains: {"text": "hello"}}`
 
-start_year = 2022
-end_year = 2024
-
-result_dict = collection.query(
-    query_texts=[QUERY],
-    n_results=10,
-    where={
-        "$and": [
-            {"year": {"$lt": end_year}},
-            {"year": {"$gte": start_year}},
-        ]
-    }
-)
-
-searched_df = pd.DataFrame(result_dict["metadatas"][0])
-searched_df["distance"] = result_dict["distances"][0]
+# start_year = 2022
+# end_year = 2024
+#
+# select_acl = 1
+# select_cs_lg = 0
+# select_cs_cl = 1
+# select_cs_ai = 0
+# select_cs_ir = 0
+# select_cs_se = 0
+# select_cs_ar = 0
+#
+#
+# and_conditions = [
+#     {"year": {"$lt": end_year}},
+#     {"year": {"$gte": start_year}},
+# ]
+# or_conditions = [
+#     {"acl": {"$eq": select_acl}},
+#     {"cs.LG": {"$eq": select_cs_lg}},
+#     {"cs.CL": {"$eq": select_cs_cl}},
+#     {"cs.AI": {"$eq": select_cs_ai}},
+#     {"cs.IR": {"$eq": select_cs_ir}},
+#     {"cs.SE": {"$eq": select_cs_se}},
+#     {"cs.AR": {"$eq": select_cs_ar}},
+# ]
+#
+#
+# result_dict = collection.query(
+#     query_texts=[QUERY],
+#     n_results=10,
+#     where={
+#         "$and": and_conditions,
+#         "$or": or_conditions,
+#     }
+# )
+#
+# searched_df = pd.DataFrame(result_dict["metadatas"][0])
+# searched_df["distance"] = result_dict["distances"][0]
