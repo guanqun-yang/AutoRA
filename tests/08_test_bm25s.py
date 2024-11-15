@@ -3,6 +3,7 @@ import Stemmer
 import pandas as pd
 
 from setting import setting
+from utils.common import load_google_sheet
 
 STEMMER = Stemmer.Stemmer("english")
 
@@ -47,17 +48,22 @@ def search_index(query, documents, index, k):
     )
 
 
-df = pd.read_json(
-    setting.DATASET_PATH / "2015_2024_usenix_icse.json",
-    lines=True,
-    orient="records"
+# df = pd.read_json(
+#     setting.DATASET_PATH / "2015_2024_usenix_icse.json",
+#     lines=True,
+#     orient="records"
+# )
+
+df = load_google_sheet(
+    "LiteratureAnalytics",
+    "Collection",
 )
 
 documents = df.title.tolist()
 index = create_index(documents)
 
-query = "explain llm language model security detection commit"
-search_df = search_index(query, documents, index, k=10)
+query = "vulnerability detection explain interpret reproduce proof-of-concept accept"
+search_df = search_index(query, documents, index, k=200)
 result_df = pd.merge(left=df, right=search_df, left_on="title", right_on="text")
 
 

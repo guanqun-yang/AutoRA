@@ -44,7 +44,7 @@ def preprocess_chunk(chunk):
     return chunk
 
 
-filename = setting.DATASET_PATH / "usenix_icse_2015_2024.json"
+filename = setting.DATASET_PATH / "se_2022_2024.json"
 
 for chunk in pd.read_json(
     filename,
