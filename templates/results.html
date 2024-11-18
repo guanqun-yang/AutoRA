@@ -13,6 +13,18 @@
             padding: 10px;
             margin: 5px 0;
         }
+        a {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        a:hover {
+            color: darkblue;
+        }
+        .score {
+            font-size: small;
+            color: gray;
+        }
     </style>
     <script>
         // Function to toggle highlight dynamically
@@ -73,8 +85,11 @@
     <div>
         {% for paper in papers %}
         <div id="paper-{{ loop.index0 }}" class="">
-            <strong>{{ paper.venue }} {{ paper.year }} | {{ paper.title }}</strong><br>
+            <a href="https://www.google.com/search?q={{ paper.title | urlencode }}" target="_blank">
+                <strong>{{ paper.venue }} {{paper.year}} | {{ paper.title }}</strong>
+            </a><br>
             <em>{{ paper.authors }}</em><br>
+            <span class="score">Score: {{ paper.score }}</span><br>
             <label>
                 <input type="radio" class="relevance-radio" name="relevance-{{ loop.index0 }}"
                        data-id="{{ loop.index0 }}" value="relevant"

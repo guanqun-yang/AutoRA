@@ -37,7 +37,9 @@ def home():
 
     if query:
         search_df = search_index(query, documents, index, k=num_papers)
-        search_df = pd.merge(left=df, right=search_df, on="title").reset_index(drop=True)
+        search_df = pd.merge(left=df, right=search_df, on="title")\
+                      .sort_values(by=["year", "score"], ascending=[False, False])\
+                      .reset_index(drop=True)
         search_df["id"] = search_df.index
         search_results = search_df.to_dict("records")
 
