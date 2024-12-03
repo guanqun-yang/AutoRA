@@ -22,7 +22,7 @@ def search_index(query, documents, index, k):
     )
 
 # Sample DataFrame for testing
-df = pd.read_json(setting.DATASET_PATH / "se_2022_2024.json", lines=True, orient="records")
+df = pd.read_json(setting.DATASET_PATH / "2024-11-26-22-56-31.json", lines=True, orient="records")
 documents = df.title.tolist()
 index = create_index(documents)
 
@@ -38,8 +38,7 @@ def home():
     if query:
         search_df = search_index(query, documents, index, k=num_papers)
         search_df = pd.merge(left=df, right=search_df, on="title")\
-                      .sort_values(by=["year", "score"], ascending=[False, False])\
-                      .reset_index(drop=True)
+                      .sort_values(by=["year", "score"], ascending=[False, False])
         search_df["id"] = search_df.index
         search_results = search_df.to_dict("records")
 
