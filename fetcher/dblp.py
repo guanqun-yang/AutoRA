@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 
-def fetch_dblp_papers(urls):
+def fetch_dblp_papers(urls, verbose=False):
     records = list()
     for url in urls:
         year_search_result = re.search("\d{4}", url)
@@ -29,7 +29,7 @@ def fetch_dblp_papers(urls):
     titles = list()
     records = list()
 
-    with tqdm(total=len(record_df)) as pbar:
+    with tqdm(total=len(record_df), disable=not verbose) as pbar:
         for _, row in record_df.iterrows():
             url = row["url"]
 

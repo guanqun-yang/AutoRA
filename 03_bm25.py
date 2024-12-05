@@ -22,7 +22,7 @@ def search_index(query, documents, index, k):
     )
 
 # Sample DataFrame for testing
-df = pd.read_json(setting.DATASET_PATH / "2024-11-26-22-56-31.json", lines=True, orient="records")
+df = pd.read_json(setting.DATASET_PATH / "2024-12-05-00-11-46.json", lines=True, orient="records")
 documents = df.title.tolist()
 index = create_index(documents)
 
@@ -33,18 +33,42 @@ app.secret_key = "dummy-secret-key"
 def home():
     query = request.form.get("query", "")
     num_papers = int(request.form.get("num_papers", 10))
+    start_year = request.form.get("start_year") or min(df["year"].dropna()) # Get start year
+    end_year = request.form.get("end_year") or max(df["year"].dropna()) # Get end year
+    all_venues = df.venue.unique().tolist()
+    selected_venues = request.form.getlist("venues") or all_venues
     search_results = []
 
     if query:
-        search_df = search_index(query, documents, index, k=num_papers)
-        search_df = pd.merge(left=df, right=search_df, on="title")\
-                      .sort_values(by=["year", "score"], ascending=[False, False])
+        search_df = search_index(query, documents, index, k=len(documents))
+        search_df = pd.merge(left=df, right=search_df, on="title")
         search_df["id"] = search_df.index
-        search_results = search_df.to_dict("records")
 
+        # print(search_df.score.describe())
+
+        if selected_venues:
+            search_df = search_df[search_df["venue"].isin(selected_venues)]
+
+        if start_year and end_year:
+            search_df = search_df[
+                (search_df["year"] >= int(start_year)) & (search_df["year"] <= int(end_year))
+            ]
+
+        search_df = search_df.sort_values(by="score", ascending=False).head(num_papers)
+        search_df = search_df.sort_values(by=["year", "score"], ascending=[False, False])
+
+        search_results = search_df.to_dict("records")
         session["search_df"] = search_df.to_json(orient="records")
 
-    return render_template("results.html", papers=search_results, query=query)
+    return render_template(
+        "results.html",
+        papers=search_results,
+        start_year=start_year,
+        end_year=end_year,
+        query=query,
+        venues=all_venues,
+        selected_venues=selected_venues
+    )
 
 @app.route("/export", methods=["POST"])
 def export():

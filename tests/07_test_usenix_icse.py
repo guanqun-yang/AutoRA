@@ -5,7 +5,7 @@ from fetcher.dblp import fetch_dblp_papers
 from utils.common import add_google_sheet, get_current_datetime
 from setting import setting
 
-START_YEAR = 2022
+START_YEAR = 2000
 END_YEAR = 2024
 
 usenix_urls = [

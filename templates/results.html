@@ -26,6 +26,26 @@
             color: gray;
         }
     </style>
+    <style>
+        #venues-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* At most 5 columns */
+            gap: 10px; /* Spacing between checkboxes */
+        }
+
+        .venue-checkbox {
+            display: flex;
+            align-items: center;
+        }
+
+        .venue-checkbox input {
+            margin-right: 5px; /* Space between checkbox and label */
+        }
+
+        .venue-checkbox label {
+            font-size: 14px; /* Adjust font size for better readability */
+        }
+    </style>
     <script>
         // Function to toggle highlight dynamically
         function toggleHighlight(id, value) {
@@ -71,11 +91,37 @@
     <h1>BM25 Paper Search</h1>
 
     <!-- New Search Form -->
+<!--    <form method="post" action="/">-->
+<!--        <label for="query">Query:</label>-->
+<!--        <input type="text" id="query" name="query" value="{{ query }}" required>-->
+<!--        <label for="num_papers">Number of Papers to Retrieve:</label>-->
+<!--        <input type="number" id="num_papers" name="num_papers" min="1" required>-->
+<!--        <button type="submit">Search</button>-->
+<!--    </form>-->
     <form method="post" action="/">
         <label for="query">Query:</label>
         <input type="text" id="query" name="query" value="{{ query }}" required>
+
         <label for="num_papers">Number of Papers to Retrieve:</label>
         <input type="number" id="num_papers" name="num_papers" min="1" required>
+
+        <label for="venues">Filter by Venue:</label>
+        <div id="venues-container">
+            {% for venue in venues %}
+            <div class="venue-checkbox">
+                <input type="checkbox" id="venue-{{ loop.index }}" name="venues" value="{{ venue }}"
+                       {% if venue in selected_venues %}checked{% endif %}>
+                <label for="venue-{{ loop.index }}">{{ venue }}</label>
+            </div>
+            {% endfor %}
+        </div>
+
+        <label for="start_year">Start Year:</label>
+        <input type="number" id="start_year" name="start_year" value="{{ start_year }}" placeholder="e.g., 2000">
+
+        <label for="end_year">End Year:</label>
+        <input type="number" id="end_year" name="end_year" value="{{ end_year }}" placeholder="e.g., 2023">
+
         <button type="submit">Search</button>
     </form>
 
