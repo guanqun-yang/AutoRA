@@ -25,29 +25,23 @@
             font-size: small;
             color: gray;
         }
-    </style>
-    <style>
         #venues-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr); /* At most 5 columns */
             gap: 10px; /* Spacing between checkboxes */
         }
-
         .venue-checkbox {
             display: flex;
             align-items: center;
         }
-
         .venue-checkbox input {
             margin-right: 5px; /* Space between checkbox and label */
         }
-
         .venue-checkbox label {
             font-size: 14px; /* Adjust font size for better readability */
         }
     </style>
     <script>
-        // Function to toggle highlight dynamically
         function toggleHighlight(id, value) {
             const item = document.getElementById(`paper-${id}`);
             if (value === "relevant") {
@@ -57,7 +51,6 @@
             }
         }
 
-        // Function to export selected papers
         function exportPapers() {
             const relevantIds = [];
             const irrelevantIds = [];
@@ -88,16 +81,7 @@
     </script>
 </head>
 <body>
-    <h1>BM25 Paper Search</h1>
-
-    <!-- New Search Form -->
-<!--    <form method="post" action="/">-->
-<!--        <label for="query">Query:</label>-->
-<!--        <input type="text" id="query" name="query" value="{{ query }}" required>-->
-<!--        <label for="num_papers">Number of Papers to Retrieve:</label>-->
-<!--        <input type="number" id="num_papers" name="num_papers" min="1" required>-->
-<!--        <button type="submit">Search</button>-->
-<!--    </form>-->
+    <h1>Paper Search</h1>
     <form method="post" action="/">
         <label for="query">Query:</label>
         <input type="text" id="query" name="query" value="{{ query }}" required>
@@ -122,10 +106,16 @@
         <label for="end_year">End Year:</label>
         <input type="number" id="end_year" name="end_year" value="{{ end_year }}" placeholder="e.g., 2023">
 
+        <!-- Algorithm Selector -->
+        <label for="algorithm">Choose Algorithm:</label>
+        <select id="algorithm" name="algorithm" required>
+            <option value="BM25" {% if algorithm == "BM25" %}selected{% endif %}>BM25</option>
+            <option value="semantic_search" {% if algorithm == "semantic_search" %}selected{% endif %}>Semantic Search</option>
+        </select>
+
         <button type="submit">Search</button>
     </form>
 
-    <!-- Results Section -->
     <h2>Search Results</h2>
     <button onclick="exportPapers()">Export Papers (JSON)</button>
     <div>

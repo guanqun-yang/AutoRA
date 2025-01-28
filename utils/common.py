@@ -1,13 +1,18 @@
+import os
+import yaml
 import time
 import string
 import random
 import pickle
 import gspread
 import pathlib
+import hashlib
+import itertools
 
 import pandas as pd
 
 from nltk import corpus
+from functools import reduce
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
@@ -73,3 +78,26 @@ def load_google_sheet(filename, sheetname):
     df = pd.DataFrame(client.worksheet(sheetname).get_all_records())
 
     return df
+
+
+def get_env():
+    with open(setting.ROOT_DIRECTORY / "env.yaml", "r") as fp:
+        content = yaml.safe_load(fp)
+
+    d = reduce(
+        lambda x, y: {**x, **y},
+        list(itertools.chain(*itertools.chain(content.values())))
+    )
+
+    return d
+
+
+def set_env():
+    d = get_env()
+
+    for key, val in d.items():
+        os.environ[key] = str(val)
+
+
+def convert_text_to_hash(text):
+    return  hashlib.sha256(text.encode()).hexdigest()

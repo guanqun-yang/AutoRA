@@ -11,3 +11,6 @@ datasets/*
 
 tests/acl_embedding.pkl
 tests/faiss_index.bin
+
+env.yaml
+embeddings.chroma
