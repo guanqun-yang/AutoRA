@@ -8,9 +8,15 @@ utils/credential.json
 # keep the folder
 !datasets/README.md
 datasets/*
+!datasets/update.sh
 
 tests/acl_embedding.pkl
 tests/faiss_index.bin
 
 env.yaml
 embeddings.chroma
+
+slurm*
+*.log
+
+
