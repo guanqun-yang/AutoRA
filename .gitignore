@@ -12,7 +12,9 @@ datasets/*
 
 tests/acl_embedding.pkl
 tests/faiss_index.bin
-
+tests/benchmark_index/*
+!tests/benchmark_index/*.py
+!tests/benchmark_index/*.sh
 env.yaml
 embeddings.chroma
 
