@@ -12,6 +12,7 @@ from utils.embedder import (
 )
 from utils.common import (
     add_google_sheet,
+    add_github_page,
     get_current_datetime,
 )
 
@@ -31,12 +32,40 @@ start_year = (end_year - 5) % 100
 
 ##################################################
 
+def format_markdown_page(df):
+    lines = list()
+
+    for idx, row in df.iterrows():
+        rank = idx + 1
+
+        title = row["title"]
+        authors = row["authors"]
+        abstract = row["abstract"]
+        arxiv_id = row["arxiv_id"]
+        update_date = row["update_date"]
+
+        # Build PDF link
+        pdf_link = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+
+        # Build formatted block
+        block = f"**[{rank}. [{arxiv_id}] {title}]({pdf_link})** (Updated on {update_date})\n\n" \
+                f"*{authors}*\n\n" \
+                f"{abstract}\n\n" \
+                "---\n"
+
+        lines.append(block)
+
+    return "\n".join(lines)
+
+
+##################################################
+search_query = "code llm data poisoning copyright protection"
+
 queries = [
-    "data poisoning copyright llm code nightshade"
+    search_query
 ]
 doc_index = faiss.read_index(str(FAISS_PATH))
 query_vecs = np.array(get_hf_embedding(model, tokenizer, queries))
-
 
 _, indices = doc_index.search(query_vecs, TOP_K)
 
@@ -71,7 +100,12 @@ df["authors"] = df.authors_parsed.apply(lambda x: ", ".join([" ".join(xx[::-1]).
 df["url"] = df.arxiv_id.apply(lambda x: "https://arxiv.org/abs/{}".format(x))
 
 df = df[["rank", "arxiv_id", "update_date", "title", "abstract", "authors", "url"]]
+markdown_string = format_markdown_page(df)
+
+add_github_page(search_query, markdown_string)
 
 ##################################################
-add_google_sheet(df.astype(str), "LiteratureAnalytics", get_current_datetime())
-print("✅ Google Sheet Updated")
+
+
+# add_google_sheet(df.astype(str), "LiteratureAnalytics", get_current_datetime())
+# print("✅ Google Sheet Updated")
