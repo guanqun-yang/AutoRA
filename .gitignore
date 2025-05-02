@@ -20,5 +20,6 @@ embeddings.chroma
 
 slurm*
 *.log
+.DS_Store
 
 
