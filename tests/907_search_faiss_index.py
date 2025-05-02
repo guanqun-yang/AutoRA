@@ -1,11 +1,13 @@
 import torch
 import faiss
 import duckdb
+import argparse
 
 import numpy as np
+import pandas as pd
 
 from setting import setting
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.embedder import (
     get_hf_embedding,
     get_model_and_tokenizer,
@@ -26,10 +28,6 @@ BATCH_SIZE = 256
 TOP_K = 200
 
 model, tokenizer = get_model_and_tokenizer(EMBEDDING_MODEL, DEVICE)
-
-end_year = datetime.now().year % 100
-start_year = (end_year - 5) % 100
-
 ##################################################
 
 def format_markdown_page(df):
@@ -48,7 +46,7 @@ def format_markdown_page(df):
         pdf_link = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
 
         # Build formatted block
-        block = f"**[{rank}. [{arxiv_id}] {title}]({pdf_link})** (Updated on {update_date})\n\n" \
+        block = f"**[{rank}. [{arxiv_id}] {title}]({pdf_link})** ({update_date})\n\n" \
                 f"*{authors}*\n\n" \
                 f"{abstract}\n\n" \
                 "---\n"
@@ -59,13 +57,17 @@ def format_markdown_page(df):
 
 
 ##################################################
-search_query = "code llm data poisoning copyright protection"
 
-queries = [
-    search_query
-]
+parser = argparse.ArgumentParser()
+parser.add_argument("--search_query", type=str, default="bert")
+args = parser.parse_args()
+
+SEARCH_QUERY = args.search_query
+
+##################################################
+
 doc_index = faiss.read_index(str(FAISS_PATH))
-query_vecs = np.array(get_hf_embedding(model, tokenizer, queries))
+query_vecs = np.array(get_hf_embedding(model, tokenizer, [SEARCH_QUERY]))
 
 _, indices = doc_index.search(query_vecs, TOP_K)
 
@@ -73,24 +75,26 @@ con = duckdb.connect(database=str(DB_PATH), read_only=True)
 all_indices = indices.flatten().tolist()
 
 ##################################################
-placeholders = ",".join(["?"] * len(all_indices))
 
-#query = f"SELECT * FROM arxiv WHERE int_id IN ({placeholders})"
-query = f"""
-SELECT *
-FROM arxiv
-WHERE int_id IN ({placeholders})
-  AND NOT EXISTS (
-      SELECT 1
-      FROM UNNEST(STRING_SPLIT(categories, ' ')) AS cat
-      WHERE cat.unnest NOT LIKE 'cs.%'
-  )
-  AND (
-      CAST(SUBSTR(arxiv_id, 1, 2) AS INTEGER) BETWEEN {start_year} AND {end_year}
-  )
-"""
+placeholders = ",".join(["?"] * len(all_indices))
+query = f"SELECT * FROM arxiv WHERE int_id IN ({placeholders})"
+
 ##################################################
+
 df = con.execute(query, all_indices).df()
+
+# condition 1
+df['update_date'] = pd.to_datetime(df['update_date'], errors='coerce')
+mask_date = (df['update_date'] >= datetime.now() - timedelta(days=5*365))
+
+# condition 2
+mask_cs = df['categories'].apply(lambda x: any(cat.startswith('cs.') for cat in x.split() if isinstance(x, str)))
+
+df = df[mask_cs & mask_date]
+df['update_date'] = df['update_date'].dt.strftime('%Y-%m-%d')
+
+##################################################
+
 df = df.set_index("int_id").loc[[int(idx) for idx in all_indices if int(idx) in df.int_id.tolist()]].reset_index()
 
 ##################################################
@@ -102,7 +106,7 @@ df["url"] = df.arxiv_id.apply(lambda x: "https://arxiv.org/abs/{}".format(x))
 df = df[["rank", "arxiv_id", "update_date", "title", "abstract", "authors", "url"]]
 markdown_string = format_markdown_page(df)
 
-add_github_page(search_query, markdown_string)
+add_github_page(SEARCH_QUERY, markdown_string)
 
 ##################################################
 
